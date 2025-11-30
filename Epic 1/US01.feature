@@ -1,36 +1,38 @@
-Feature: US01 - Registro de material reciclable
+Feature: US01 - Gestión de Materiales (Registro)
     Como joven eco-consciente o bodega/pequeños comercios,
     Quiero registrar el tipo y cantidad de material reciclable,
     Para evitar acumulación en mi casa.
 
 Scenario Outline: Registro exitoso del material reciclable
-    Dado que el <usuario> se encuentra en el apartado <Registrar_material>
-    Cuando completa los campos <tipos_de_material>, <cantidad>, <horario_de_recojo>, sube una <foto> y define el <pago_opcional>
-    Y presiona el botón <Registrar>
-    Entonces el sistema almacena la <informacion>
-    Y muestra el <mensaje_de_confirmacion> y realiza la <actualizacion_de_historial>
+    Dado que el <usuario_autenticado> se encuentra en el apartado "Registrar material"
+    Cuando completa el formulario con <tipo_material>, <cantidad>, <horario_recojo> y presiona "Registrar"
+    Entonces el sistema muestra un <mensaje_confirmacion>
+    Y almacena el <material_registrado> en el historial de entregas
 
     Examples: Datos de entrada
-        | usuario                               | Registrar_material    | tipos_de_material | cantidad | horario_de_recojo | foto           | pago_opcional | Registrar            |
-        | jsm0502@gmail.com (Eco-consciente)    | "Registrar Material"  | Plástico          | 5 kg     | 10:00 AM - 12:00 PM| [foto_botellas.jpg]| Sí (S/ 2.00)  | [Click en Registrar] |
-        | bodega.ecomart@email.com (Bodega)     | "Registrar Material"  | Cartón            | 20 kg    | 03:00 PM - 05:00 PM| [foto_cajas.jpg]   | No            | [Click en Registrar] |
+        | usuario_autenticado                   | tipo_material | cantidad      | horario_recojo  |
+        | jsm0502@gmail.com (Eco-consciente)    | Plástico      | 5 kg          | Mañana 9-11 AM  |
+        | bodega.ecomart@email.com (Bodega)     | Cartón        | 20 kg         | Tarde 3-5 PM    |
+        | ana.perez@email.com (Eco-consciente)  | Vidrio        | 30 botellas   | Mañana 10-12 AM |
 
     Examples: Datos de salida
-        | informacion                                   | mensaje_de_confirmacion           | actualizacion_de_historial                    |
-        | {id: 101, material: 'Plástico', estado: 'Pendiente'} | "Material registrado con éxito."  | [Nuevo registro añadido en 'Mi Perfil']       |
-        | {id: 102, material: 'Cartón', estado: 'Pendiente'}   | "Material registrado con éxito."  | [Nuevo registro añadido en 'Mi Perfil']       |
+        | mensaje_confirmacion                  | material_registrado                               |
+        | "Registro exitoso del material"       | {tipo: Plástico, estado: Pendiente}                |
+        | "Registro exitoso del material"       | {tipo: Cartón, estado: Pendiente}                  |
+        | "Registro exitoso del material"       | {tipo: Vidrio, estado: Pendiente}                  |
 
 Scenario Outline: Visualización del material registrado en el historial
-    Dado que el <usuario> ha registrado un material y se encuentra en el apartado <Mi_perfil>
-    Cuando visualiza la sección <Entregas_y_Recojos>
-    Entonces podrá ver <quien_recoge_su_material> y <a_que_hora>
+    Dado que el <usuario_autenticado> ha registrado un material y accede al apartado de "Mi perfil"
+    Cuando visualiza la sección "Entregas y Recojos"
+    Entonces el sistema muestra la <lista_entregas_recojos>
+    Y puede ver el <detalle_material>, quién lo recoge, la hora y el <estado_recojo>
 
     Examples: Datos de entrada
-        | usuario                               | Mi_perfil    | Entregas_y_Recojos      |
-        | jsm0502@gmail.com (Eco-consciente)    | "Mi Perfil"  | "Historial de Entregas" |
-        | bodega.ecomart@email.com (Bodega)     | "Mi Perfil"  | "Historial de Recojos"  |
+        | usuario_autenticado                   | historial_entregas (Datos en el sistema)                               |
+        | jsm0502@gmail.com                     | [{id: 1, tipo: 'Plástico', recolector: 'Juan Silva', hora: '10 AM'}]   |
+        | bodega.ecomart@email.com              | [{id: 2, tipo: 'Cartón', recolector: 'N/A', hora: 'N/A'}]              |
 
     Examples: Datos de salida
-        | quien_recoge_su_material      | a_que_hora            |
-        | "Juan Silva (Recolector)"     | "10:00 AM - 12:00 PM" |
-        | "Pendiente de asignación"     | "03:00 PM - 05:00 PM" |
+        | lista_entregas_recojos                | detalle_material          | estado_recojo |
+        | [Entrega 1]                           | "Plástico, 5 kg"          | Completado    |
+        | [Recojo 1]                            | "Cartón, 20 kg"           | Pendiente     |
