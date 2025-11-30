@@ -27,4 +27,5 @@ Scenario Outline: Historial vacío para usuario nuevo
         | usuario.nuevo@email.com               | "Historial Actividades"  |
 
     Examples: Datos de salida
-        | mensaje_historial_
+        | mensaje_historial_vacio               |
+        | "Aún no tienes actividades registradas."|
