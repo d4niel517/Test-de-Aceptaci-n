@@ -1,35 +1,52 @@
-Feature: US48 - Centro de soporte (FAQ y contacto directo)
-    Como joven eco-consciente o bodega,
-    Quiero acceder a un centro de soporte con preguntas frecuentes (FAQ) y tener la opción de contactar a un asistente,
-    Para resolver dudas o reportar problemas.
+Feature: US48 - Soporte y atención al cliente
+    Como usuario (joven eco-consciente o bodega),
+    Quiero reportar incidencias, contactar a soporte y resolver problemas,
+    Para solventar mis dudas y procurar que el funcionamiento de la app sea el correcto.
 
 Scenario Outline: El usuario accede al centro de soporte (FAQ)
-    Dado que el <usuario_autenticado> quiere respuestas rápidas
-    Cuando se dirige a la <pestaña_soporte_al_cliente> y realiza la <accion_click_faq>
-    Entonces la aplicación lo redirige a la <pantalla_faq_visible> y le muestra la <lista_preguntas_respuestas>
+    Dado que el <usuario_rol> quiere respuestas rápidas a preguntas cotidianas
+    Cuando se dirige a la pestaña "Soporte al cliente" y selecciona la opción "FAQ"
+    Entonces el sistema lo redirige a la pantalla de FAQ
+    Y le muestra la <lista_preguntas_frecuentes> con sus respuestas
 
     Examples: Datos de entrada
-        | usuario_autenticado                   | pestaña_soporte_al_cliente    | accion_click_faq          |
-        | jsm0502@gmail.com (Eco-consciente)    | "Soporte al cliente"          | [Click en "FAQ"]          |
-        | bodega.ecomart@email.com (Bodega)     | "Soporte al cliente"          | [Click en "Preguntas Frecuentes"] |
-
+        | usuario_rol           |
+        | Joven Eco-consciente  |
+        | Bodega                |
+    
     Examples: Datos de salida
-        | pantalla_faq_visible      | lista_preguntas_respuestas                                |
-        | [Pantalla FAQ cargada]    | [Lista: "¿Cómo reciclar?", "¿Cómo ganar puntos?"]         |
-        | [Pantalla FAQ cargada]    | [Lista: "¿Cómo programar recojo?", "¿Cómo canjear?"]      |
+        | lista_preguntas_frecuentes                                            |
+        | [Pregunta 1: "¿Cómo registro material?", Respuesta 1: "Ve a..."]        |
+        | [Pregunta 2: "¿Cómo veo mi historial?", Respuesta 2: "Ingresa a..."]   |
 
-Scenario Outline: El usuario busca asistencia personalizada (Chat)
-    Dado que el <usuario_autenticado> tiene una duda específica y se encuentra en la <pantalla_centro_soporte>
-    Cuando presiona el botón <Soporte_24_7> (<accion_presionar_soporte_24_7>)
-    Entonces se abre la <interfaz_chat_abierta> donde podrá ingresar su <descripcion_situacion> en el <campo_texto_chat_habilitado>
-    Y luego el sistema muestra el <mensaje_espera_soporte>
+Scenario Outline: El usuario busca asistencia personalizada (Envío de Formulario)
+    Dado que el <usuario_rol> tiene una duda específica y accede al "Formulario de soporte"
+    Cuando completa los campos <nombre>, <apellidos>, <correo>, <mensaje> y presiona "Enviar"
+    Entonces el sistema crea un <caso_soporte>
+    Y muestra el <mensaje_confirmacion> en pantalla
 
     Examples: Datos de entrada
-        | usuario_autenticado   | pantalla_centro_soporte   | Soporte_24_7          | accion_presionar_soporte_24_7 | descripcion_situacion |
-        | jsm0502@gmail.com     | "Centro de Soporte"       | "Botón Chat 24/7"     | [Click en Chat]               | "Tengo un problema con..." |
-        | bodega.ecomart        | "Centro de Soporte"       | "Botón Chat 24/7"     | [Click en Chat]               | "Necesito ayuda con..."    |
+        | usuario_rol           | nombre    | apellidos | correo                | mensaje                       |
+        | Bodega                | Ana       | Torres    | ana.torres@bodega.com | "No puedo ver mi historial"     |
+        | Joven Eco-consciente  | Carlos    | Solis     | c.solis@email.com     | "Mi ruta no se guardó"          |
 
     Examples: Datos de salida
-        | interfaz_chat_abierta     | campo_texto_chat_habilitado   | mensaje_espera_soporte                                    |
-        | [Ventana de chat activa]  | [Caja de texto activa]        | "En breve, el área de soporte se contactará con usted."   |
-        | [Ventana de chat activa]  | [Caja de texto activa]        | "En breve, el área de soporte se contactará con usted."   |
+        | caso_soporte                      | mensaje_confirmacion                                                  |
+        | {ticket: #1234, estado: "Pendiente"}  | "Mensaje enviado. En breve, el área de soporte se contactará con usted."  |
+        | {ticket: #1235, estado: "Pendiente"}  | "Mensaje enviado. En breve, el área de soporte se contactará con usted."  |
+
+Scenario Outline: Validación de campos del formulario de soporte (Tarea T03)
+    Dado que el <usuario_rol> está en el "Formulario de soporte"
+    Cuando intenta presionar "Enviar" con <campos_invalidos>
+    Entonces el sistema aplica <estilos_error> a los campos incorrectos
+    Y muestra un <mensaje_error> de validación
+
+    Examples: Datos de entrada
+        | usuario_rol           | campos_invalidos                                              |
+        | Bodega                | nombre="Ana", apellidos="Torres", correo="ana.torres", mensaje=""   |
+        | Joven Eco-consciente  | nombre="", apellidos="", correo="c.solis@email.com", mensaje="Hola" |
+
+    Examples: Datos de salida
+        | estilos_error                 | mensaje_error                             |
+        | Borde rojo en campo 'mensaje' | "El campo 'mensaje' es obligatorio"       |
+        | Borde rojo en 'nombre' y 'apellidos' | "Los campos 'nombre' y 'apellidos' son obligatorios" |
