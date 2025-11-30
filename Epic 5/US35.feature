@@ -1,49 +1,56 @@
-Feature: US35 - Registro con correo electrónico, Google o Facebook
+Feature: US35 - Registro y gestión del perfil del usuario
     Como joven eco-consciente o bodega,
     Quiero registrarme con mi correo electrónico, cuenta de Google o Facebook,
     Para acceder rápidamente a la app.
 
 Scenario Outline: Registro con correo electrónico
-    Dado que el <usuario_no_registrado> está en el <formulario_registro>
-    Cuando ingresa sus <datos_registro> y realiza la <accion_presionar_registrarse>
-    Entonces el sistema envía un <email_verificacion_enviado> y muestra un <mensaje_verificacion_pendiente>
+    Dado que el <usuario_rol> quiere registrarse en la pantalla de "Registro"
+    Cuando ingresa sus <nombre>, <correo>, <celular>, <rol>, <contrasena> y presiona "Registrarse"
+    Entonces la aplicación envía un <email_verificacion> a su correo
+    Y muestra un <mensaje_pendiente> en pantalla
 
     Examples: Datos de entrada
-        | usuario_no_registrado                 | formulario_registro   | datos_registro                                            | accion_presionar_registrarse |
-        | "Joven Eco-consciente (Nuevo)"        | "Pantalla Registro"   | "Luis, luis@mail.com, 987654321, Joven, pass123"          | [Click en Registrar]         |
-        | "Bodega EcoMart (Nuevo)"              | "Pantalla Registro"   | "EcoMart, contacto@ecomart.pe, 999888777, Bodega, pass1"  | [Click en Registrar]         |
-
+        | usuario_rol           | nombre          | correo                  | celular   | rol       | contrasena     |
+        | Joven Eco-consciente  | Luis Arias      | luis.arias@email.com    | 987654321 | Ciudadano | pass123        |
+        | Bodega                | Bodega EcoMart  | ecomart@email.com       | 999888777 | Bodega    | bodegaSegura   |
+    
     Examples: Datos de salida
-        | email_verificacion_enviado            | mensaje_verificacion_pendiente                    |
-        | [Email enviado a luis@mail.com]       | "Revisa tu correo para verificar la cuenta"       |
-        | [Email enviado a contacto@ecomart.pe] | "Revisa tu correo para verificar la cuenta"       |
+        | email_verificacion              | mensaje_pendiente                         |
+        | Email con link de verificación  | "Revisa tu correo para verificar la cuenta" |
 
 Scenario Outline: Registro con cuenta de Google o Facebook
-    Dado que el <usuario_no_registrado> está en la pantalla de registro
-    Cuando realiza la <accion_elegir_google_fb> y completa el <flujo_oauth_externo> con <credenciales_oauth_validas>
-    Entonces el sistema crea la <cuenta_creada_bd>, autentica al <usuario_autenticado> y lo <redireccion_home>
+    Dado que el <usuario_rol> quiere registrarse rápidamente en la pantalla de "Registro"
+    Cuando elige registrarse con <proveedor_social> y autentica su <cuenta_social>
+    Entonces la aplicación crea la cuenta y autentica al <usuario_social> inmediatamente
+    Y lo redirige a la <pantalla_principal>
 
     Examples: Datos de entrada
-        | usuario_no_registrado | accion_elegir_google_fb       | flujo_oauth_externo   | credenciales_oauth_validas |
-        | "Joven Eco-consciente"| [Click "Registrarse con Google"] | [Pop-up Google]       | "Token válido Google"      |
-        | "Bodega EcoMart"      | [Click "Registrarse con FB"]     | [Pop-up Facebook]     | "Token válido Facebook"    |
+        | usuario_rol           | proveedor_social  | cuenta_social                   |
+        | Joven Eco-consciente  | Google            | jsm0502@gmail.com               |
+        | Bodega                | Facebook          | bodega.ecomart@facebook.com     |
 
     Examples: Datos de salida
-        | cuenta_creada_bd              | usuario_autenticado   | redireccion_home      |
-        | [Perfil creado en BD]         | [Sesión iniciada]     | [Redirige a "Home"]   |
-        | [Perfil creado en BD]         | [Sesión iniciada]     | [Redirige a "Home"]   |
+        | usuario_social                  | pantalla_principal  |
+        | jsm0502@gmail.com               | "Home"              |
+        | bodega.ecomart@facebook.com     | "Home"              |
 
 Scenario Outline: Error de registro
-    Dado que el <usuario_no_registrado> intenta registrarse
-    Cuando realiza la <accion_intentar_registro> bajo una <condicion_error> (ej. <datos_incompletos> o <correo_ya_registrado>)
-    Entonces la aplicación debe mostrar un <mensaje_error_especifico>
+    Dado que el <usuario_rol> intenta registrarse en la aplicación
+    Cuando ingresa <datos_invalidos> o usa un <correo_ya_registrado>
+    Entonces la aplicación debe mostrar un <mensaje_error> claro indicando el motivo
 
-    Examples: Datos de entrada
-        | usuario_no_registrado | accion_intentar_registro  | condicion_error       | datos_incompletos     | correo_ya_registrado      |
-        | "Usuario Nuevo"       | [Click Registrar]         | "Campos vacíos"       | [Nombre vacío]        | N/A                       |
-        | "Usuario Existente"   | [Click Registrar]         | "Email duplicado"     | N/A                   | "luis@mail.com (Existe)"  |
+    Examples: Datos de entrada (Datos incompletos)
+        | usuario_rol   | datos_invalidos                                | correo_ya_registrado  |
+        | Bodega        | nombre="", correo="test@e.com", contrasena="123" | N/A                   |
 
-    Examples: Datos de salida
-        | mensaje_error_especifico      |
+    Examples: Datos de salida (Datos incompletos)
+        | mensaje_error                 |
         | "Faltan campos obligatorios"  |
+
+    Examples: Datos de entrada (Correo duplicado)
+        | usuario_rol           | datos_invalidos | correo_ya_registrado          |
+        | Joven Eco-consciente  | N/A             | luis.arias@email.com (existe) |
+
+    Examples: Datos de salida (Correo duplicado)
+        | mensaje_error                 |
         | "Este correo ya está en uso"  |
